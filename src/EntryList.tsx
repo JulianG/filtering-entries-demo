@@ -2,6 +2,7 @@ import * as React from "react";
 import { List, Tag, Col, Row, Card } from "antd";
 import { Typography } from "antd";
 import { TagFilter, FilterPredicate } from "./GenericFilter";
+import { useFilters, isEntryMatchingFilters } from "./filters";
 
 export type Entry = {
   id: number;
@@ -16,32 +17,58 @@ type Props = {
 };
 
 export const EntryList: React.FC<Props> = ({ list }) => {
-  //
-  // we may want to keep a list of tags outside of the <Filters>
-  // component, so that we can add filter tags by clicking
-  // on the list items themselves?
-  //
-  const [
-    filterFunctionPredicate,
-    setColorFilter,
-    setJobFilter,
-    setAgeFilter
-  ] = useCombinedFilters<Entry>(3);
 
-  const filteredList = list.filter(filterFunctionPredicate);
+  const [filters, createFilterAction] = useFilters<Entry>({
+    color: new Array<string>(),
+    job: new Array<string>(),
+    age: new Array<string>()
+  });
+
+  const filteredList = list.filter(entry => (
+    isEntryMatchingFilters(filters, 'color', entry)
+    && isEntryMatchingFilters(filters, 'job', entry)
+    && isEntryMatchingFilters(filters, 'age', entry)
+  ));
+
+  const tags = React.useMemo(
+    () => ({
+      job: new Set(list.map(entry => entry.job).sort()),
+      color: new Set(list.map(entry => entry.color).sort()),
+      age: new Set(list.map(entry => entry.age.toString()).sort())
+    }),
+    [list]
+  );
 
   return (
     <Card>
       <Typography.Title level={2}>Search Results</Typography.Title>
       <Row>
         <Col span={8}>
-          <TagFilter list={list} property="job" onChange={setJobFilter} />
+          <TagFilter
+            tags={tags.job}
+            value={filters.job!}
+            property="job"
+            onAdd={createFilterAction("add", "job")}
+            onRemove={createFilterAction("remove", "job")}
+          />
         </Col>
         <Col span={8}>
-          <TagFilter list={list} property="color" onChange={setColorFilter} />
+          <TagFilter
+            tags={tags.color}
+            value={filters.color!}
+            property="color"
+            onAdd={createFilterAction("add", "color")}
+            onRemove={createFilterAction("remove", "color")}
+          />
         </Col>
         <Col span={8}>
-          <TagFilter list={list} property="age" onChange={setAgeFilter} />
+          <TagFilter
+            tags={tags.age}
+            value={filters.age!.map(a => a.toString())}
+            property="age"
+            onAdd={createFilterAction("add", "age")}
+            onRemove={createFilterAction("remove", "age")}
+          />
         </Col>
       </Row>
       <List
@@ -49,8 +76,16 @@ export const EntryList: React.FC<Props> = ({ list }) => {
         dataSource={filteredList}
         renderItem={entry => (
           <List.Item key={entry.id}>
-            {entry.name} ({entry.age}) <Tag>{entry.job}</Tag>
-            <Tag color={entry.color}>{entry.color}</Tag>
+            {entry.name} ({entry.age})
+            <Tag
+              style={{ cursor: 'pointer' }}
+              onClick={() => createFilterAction("add", "job")(entry.job)}
+            >{entry.job}</Tag>
+            <Tag
+              color={entry.color}
+              style={{ cursor: 'pointer' }}
+              onClick={() => createFilterAction("add", "color")(entry.color)}
+            >{entry.color}</Tag>
           </List.Item>
         )}
       />

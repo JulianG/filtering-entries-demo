@@ -6,43 +6,37 @@ type Has<P extends string, S> = { [Q in P]: S };
 export type FilterPredicate<E> = (entry: E, index: number, arr: E[]) => boolean;
 
 type Props<E, P> = {
-  list: E[];
+  tags: Set<string>;
+  value: string[];
   property: P;
-  onChange: (predicate: FilterPredicate<E>) => void;
+  onAdd: (value: string) => void;
+  onRemove: (value: string) => void;
 };
 
 export function TagFilter<
-  E extends Has<P, T>,
+  E extends Has<P, S>,
   P extends string,
-  T extends string | number
+  S extends string
 >(props: Props<E, P>) {
-  const { list, property, onChange } = props;
-
-  const filters = React.useMemo(
-    () => Array.from(new Set(list.map(entry => entry[property]).sort())),
-    [list, property]
-  );
-
-  const onOptionsChange = (selectedTags: T[]) => {
-    const predicate = (entry: E) =>
-      selectedTags.length === 0 || selectedTags.indexOf(entry[property]) > -1;
-    onChange(predicate);
-  };
+  const { tags, value, property, onAdd, onRemove } = props;
+  const filters = React.useMemo(() => Array.from(tags), [tags]);
 
   return (
     <Select
       style={{ width: "100%" }}
       mode="multiple"
       placeholder={`filter by ${property}...`}
-      allowClear={true}
-      defaultValue={new Array<T>()}
-      onChange={onOptionsChange}
+      value={value}
+      onSelect={v => onAdd(v as string)}
+      onDeselect={v => onRemove(v as string)}
     >
-      {filters.map(filter => (
-        <Select.Option key={filter.toString()} value={filter}>
-          {filter}
-        </Select.Option>
-      ))}
+      {filters
+        .map(f => f.toString())
+        .map(filter => (
+          <Select.Option key={filter} value={filter}>
+            {filter}
+          </Select.Option>
+        ))}
     </Select>
   );
 }
