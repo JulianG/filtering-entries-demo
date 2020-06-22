@@ -1,7 +1,7 @@
 import * as React from "react";
-import { List, Tag, Col, Row, Card } from "antd";
+import { List, Tag, Col, Row, Card, Input } from "antd";
 import { Typography } from "antd";
-import { TagFilter, FilterPredicate } from "./GenericFilter";
+import { TagFilter, FilterPredicate } from "./filter-components";
 import { useFilters, isEntryMatchingFilters } from "./filters";
 
 export type Entry = {
@@ -43,7 +43,10 @@ export const EntryList: React.FC<Props> = ({ list }) => {
     <Card>
       <Typography.Title level={2}>Search Results</Typography.Title>
       <Row>
-        <Col span={8}>
+        <Col span={6}>
+          <Input placeholder="search..." value={''} onChange={()=>{}} />
+        </Col>
+        <Col span={6}>
           <TagFilter
             tags={tags.job}
             value={filters.job!}
@@ -52,7 +55,7 @@ export const EntryList: React.FC<Props> = ({ list }) => {
             onRemove={createFilterAction("remove", "job")}
           />
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <TagFilter
             tags={tags.color}
             value={filters.color!}
@@ -61,7 +64,7 @@ export const EntryList: React.FC<Props> = ({ list }) => {
             onRemove={createFilterAction("remove", "color")}
           />
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <TagFilter
             tags={tags.age}
             value={filters.age!.map(a => a.toString())}

@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Select } from "antd";
+import { Select, Input } from "antd";
 
 type Has<P extends string, S> = { [Q in P]: S };
 
 export type FilterPredicate<E> = (entry: E, index: number, arr: E[]) => boolean;
 
-type Props<E, P> = {
+type TagFilterProps<E, P> = {
   tags: Set<string>;
   value: string[];
   property: P;
@@ -17,7 +17,7 @@ export function TagFilter<
   E extends Has<P, S>,
   P extends string,
   S extends string
->(props: Props<E, P>) {
+>(props: TagFilterProps<E, P>) {
   const { tags, value, property, onAdd, onRemove } = props;
   const filters = React.useMemo(() => Array.from(tags), [tags]);
 
